@@ -1,7 +1,6 @@
 import express from "express";
 import { join, login} from "../controllers/userController";
 import { trending, search } from "../controllers/videoController";
-const aa=express.Router();
 const globalRouter = express.Router();
 
 globalRouter.get("/", trending);
