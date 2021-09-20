@@ -6,10 +6,11 @@
 /login -> Login
 /search -> Search
 
-/users/:i
+/users/:id ->See User
 /users/logout -> Log Out
 /users/edit -> Edit MY Profile
-/users/delete -> Delete user
+/users/delete -> Delete My Profile 
+
 
 
 /videos/:id -> See Video
