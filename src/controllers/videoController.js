@@ -11,13 +11,13 @@ console.log("finished")
 */
 export const home = async (req, res) => {
   const videos = await Video.find({}).sort({ createdAt: "asc" });
-  console.log(videos);
+
   return res.render("home", { pageTitle: "Home", videos });
 };
 
 export const watch = async (req, res) => {
   const { id } = req.params;
-  console.log(req.params.id);
+
   const video = await Video.findById(id).exec();
   if (!video) {
     return res.render("404", { pageTitle: "Video Not Found" });

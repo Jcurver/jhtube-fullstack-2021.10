@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-
-mongoose.connect("mongodb://127.0.0.1:27017/wetube", {
+console.log(process.env.DB_URL);
+mongoose.connect(process.env.DB_URL, {
   // useNewUrlParser: true,
   // useUnifiedTopology: true,
   // useFindAndModify: false, 몽고 6.x에서 default로 편입되었음
