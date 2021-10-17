@@ -1,23 +1,24 @@
 import Video from "../models/Video";
+import Comment from "../models/Comment";
 import User from "../models/User";
 
 export const home = async (req, res) => {
   const videos = await Video.find({})
     .sort({ createdAt: "desc" })
     .populate("owner");
-
   return res.render("home", { pageTitle: "Home", videos });
 };
 
 export const watch = async (req, res) => {
   const { id } = req.params;
-  const video = await Video.findById(id).populate("owner"); // mongoose로 video에 user정보를 전부 한줄에 불러온다.
-
+  const video = await Video.findById(id).populate("owner").populate("comments");
+  console.log(video);
   if (!video) {
-    return res.render("404", { pageTitle: "Video Not Found" });
+    return res.render("404", { pageTitle: "Video not found." });
   }
   return res.render("watch", { pageTitle: video.title, video });
 };
+
 export const getEdit = async (req, res) => {
   const { id } = req.params;
   const {
@@ -25,14 +26,15 @@ export const getEdit = async (req, res) => {
   } = req.session;
   const video = await Video.findById(id);
   if (!video) {
-    return res.status(404).render("404", { pageTitle: "Video Not Found" });
+    return res.status(404).render("404", { pageTitle: "Video not found." });
   }
-
   if (String(video.owner) !== String(_id)) {
+    req.flash("error", "Not authorized");
     return res.status(403).redirect("/");
   }
-  return res.render("edit", { pageTitle: `Edit ${video.title}`, video });
+  return res.render("edit", { pageTitle: `Edit: ${video.title}`, video });
 };
+
 export const postEdit = async (req, res) => {
   const {
     user: { _id },
@@ -41,9 +43,10 @@ export const postEdit = async (req, res) => {
   const { title, description, hashtags } = req.body;
   const video = await Video.exists({ _id: id });
   if (!video) {
-    return res.render("404", { pageTitle: "Video Not Found" });
+    return res.status(404).render("404", { pageTitle: "Video not found." });
   }
   if (String(video.owner) !== String(_id)) {
+    req.flash("error", "You are not the the owner of the video.");
     return res.status(403).redirect("/");
   }
   await Video.findByIdAndUpdate(id, {
@@ -51,12 +54,7 @@ export const postEdit = async (req, res) => {
     description,
     hashtags: Video.formatHashtags(hashtags),
   });
-  // video.title = title;
-  // video.description = description;
-  // video.hashtags = hashtags
-  //   .split(",")
-  //   .map((word) => (word.startsWith("#") ? word : `#${word}`));
-  // await video.save(); 이것들 대신 위의 moonguse에서 제공하는 함수를 사용하였음.
+  req.flash("success", "Changes saved.");
   return res.redirect(`/videos/${id}`);
 };
 
@@ -68,13 +66,14 @@ export const postUpload = async (req, res) => {
   const {
     user: { _id },
   } = req.session;
-  const { path: fileUrl } = req.file;
+  const { video, thumb } = req.files;
   const { title, description, hashtags } = req.body;
   try {
     const newVideo = await Video.create({
       title,
       description,
-      fileUrl,
+      fileUrl: video[0].path,
+      thumbUrl: thumb[0].path,
       owner: _id,
       hashtags: Video.formatHashtags(hashtags),
     });
@@ -83,6 +82,7 @@ export const postUpload = async (req, res) => {
     user.save();
     return res.redirect("/");
   } catch (error) {
+    console.log(error);
     return res.status(400).render("upload", {
       pageTitle: "Upload Video",
       errorMessage: error._message,
@@ -97,7 +97,7 @@ export const deleteVideo = async (req, res) => {
   } = req.session;
   const video = await Video.findById(id);
   if (!video) {
-    return res.render("404", { pageTitle: "Video Not Found" });
+    return res.status(404).render("404", { pageTitle: "Video not found." });
   }
   if (String(video.owner) !== String(_id)) {
     return res.status(403).redirect("/");
@@ -107,12 +107,12 @@ export const deleteVideo = async (req, res) => {
 };
 
 export const search = async (req, res) => {
-  const { keyword } = req.query; // api를 제공받을 때에는 query를 가져온다.(params X)
+  const { keyword } = req.query;
   let videos = [];
   if (keyword) {
     videos = await Video.find({
       title: {
-        $regex: new RegExp(keyword, "i"), // 단어 검색을 다양한 옵션으로 변경 가능(6.27)
+        $regex: new RegExp(`${keyword}$`, "i"),
       },
     }).populate("owner");
   }
@@ -128,4 +128,35 @@ export const registerView = async (req, res) => {
   video.meta.views = video.meta.views + 1;
   await video.save();
   return res.sendStatus(200);
+};
+
+export const createComment = async (req, res) => {
+  const {
+    session: { user },
+    body: { text },
+    params: { id },
+  } = req;
+  const video = await Video.findById(id);
+  if (!video) {
+    return res.sendStatus(404);
+  }
+  const comment = await Comment.create({
+    text,
+    owner: user._id,
+    video: id,
+  });
+  video.comments.push(comment._id);
+  video.save();
+  return res.status(201).json({ newCommentId: comment._id });
+};
+
+export const removeComment = async (req, res) => {
+  const {
+    user: { _id },
+  } = req.session;
+  const user = await User.findById(id);
+  if(user !== _id){
+    return res.sendStatus(404);
+  }
+  return res.status(201);
 };

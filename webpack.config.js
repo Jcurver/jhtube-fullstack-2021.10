@@ -1,12 +1,13 @@
 // 필수 2가지 : 1. entry = 우리가 변경하고자 하는 파일경로 2. output = 저장될 파일경로/이름
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
-
+const BASE_JS = "./src/client/js/";
 module.exports = {
   entry: {
-    main: "./src/client/js/main.js",
-    videoPlayer: "./src/client/js/videoPlayer.js",
-    recorder: "./src/client/js/recorder.js",
+    main: BASE_JS + "main.js",
+    videoPlayer: BASE_JS + "videoPlayer.js",
+    recorder: BASE_JS + "recorder.js",
+    commentSection: BASE_JS + "commentSection.js",
   }, // 소스코드를 의미.
   mode: "development",
   watch: true,

@@ -13,7 +13,10 @@ const videoSchema = new mongoose.Schema({
     views: { type: Number, default: 0, required: true },
     rating: { type: Number, default: 0, required: true },
   },
-  owner: {type: mongoose.Schema.Types.ObjectId, required:true},
+  comments: [
+    { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Comment" },
+  ],
+  owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
 // videoSchema.pre("save", async function () { 세이브는 몽고 내장함수
