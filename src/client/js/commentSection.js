@@ -1,80 +1,83 @@
+import fetch from "node-fetch";
+
 const videoContainer = document.getElementById("videoContainer");
 const form = document.getElementById("commentForm");
-const delete_button = document.getElementById("delete__button");
+const textarea = form.querySelector("textarea");
+const deleteBtn = document.querySelectorAll(".deleteBtn");
 
 const addComment = (text, id) => {
-  const videoComments = document.querySelector(".video__comments ul");
-  const newComment = document.createElement("li");
-  newComment.dataset.id = id;
-  newComment.className = "video__comment";
+  const commentContainer = document.querySelector(".video__comments ul");
+  const commentList = document.createElement("li");
+  commentList.dataset.id = id;
+  commentList.classList.add("video__comment");
   const icon = document.createElement("i");
-  icon.className = "fas fa-comment";
   const span = document.createElement("span");
+  const span2 = document.createElement("span");
+  icon.className = "fas fa-comment";
   span.innerText = ` ${text}`;
-  const button = document.createElement("button");
-  button.style.border = 0;
-  button.innerText = "❌";
-  newComment.appendChild(icon);
-  newComment.appendChild(span);
-  newComment.appendChild(button);
-  videoComments.prepend(newComment);
+  span2.classList.add("deleteBtn");
+  span2.innerText = "❌";
+  commentList.appendChild(icon);
+  commentList.appendChild(span);
+  commentList.appendChild(span2);
+  commentContainer.prepend(commentList);
+  span2.addEventListener("click", handleDelete);
 };
+
 
 const handleSubmit = async (event) => {
   event.preventDefault();
-  const textarea = form.querySelector("textarea");
   const text = textarea.value;
   const videoId = videoContainer.dataset.id;
   if (text === "") {
     return;
   }
   const response = await fetch(`/api/videos/${videoId}/comment`, {
-    // const delete = await fetch(`/api/comments/${commentId}`)
-    method: "POST", // method: "DELETE"
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ text }),
   });
   if (response.status === 201) {
-    textarea.value = "";
     const { newCommentId } = await response.json();
+    textarea.value = "";
     addComment(text, newCommentId);
   }
 };
 
-const deleteComment = async (event) => {
-  event.preventDefault();
-  const commentId = videoContainer.dataset.id;
-  const deleteresponse = await fetch(`/api/comments/${commentId}`, {
-    method: "DELETE",
 
-    // method: "DELETE"
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ text }),
-    // });
-    // if (response.status === 201) {
-    //   textarea.value = "";
-    //   const { newCommentId } = await response.json();
-    //   addComment(text, newCommentId);
-    // }
-  });
-  console.log(deleteresponse);
+const deleteComment = (event) => {
+  const commentContainer = document.querySelector(".video__comments ul");
+  const commentList = event.target.parentNode;
+  commentContainer.removeChild(commentList);
 };
 
-if (form) {
-  form.addEventListener("submit", handleSubmit);
+
+const handleDelete = async (event) => {
+  const commentList = event.target.parentNode;
+  const commentId = commentList.dataset.id;
+  console.log(commentId);
+  const videoId = videoContainer.dataset.id;
+  const response = await fetch(`/api/comments/${commentId}/delete`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      videoId,
+    }),
+  });
+  console.log(response.status);
+  if (response.status === 201) {
+    deleteComment(event);
+  }
+  if (response.status === 403) {
+    alert("댓글 주인이 아닙니다.");
+  }
+};
+
+form.addEventListener("submit", handleSubmit);
+for (let i = 0; i < deleteBtn.length; i++) {
+  deleteBtn[i].addEventListener("click", handleDelete);
 }
-
-if (delete_button) {
-  delete_button.addEventListener("click", deleteComment);
-}
-// Router.delete("/dgeasdf",fdas)
-
-// 프론트엔드 : 클릭에대한 이벤트리스너, delete request
-
-// 백엔드 : url만들고 컨트롤러 만들어서 내가 댓글작성자인지 확인
-
-// 댓글의 작성자에게만 보이게 하기 //

@@ -13,7 +13,7 @@ block content
                     span#totalTime 00:00
             input(type="range",step="1", value="0", min="0")#timeline.videoControls__timeline
             div.videoControls__volume
-                input(type="range",step="0.1", value=0.5, min="0", max="1")#volume
+                input(type="range",step="0.01", value=0.5, min="0", max="1")#volume
                 span#mute
                     i.fas.fa-volume-up
             div
@@ -36,11 +36,12 @@ block content
                 button Add Comment
     div.video__comments
         ul
-            each comment in video.comments.reverse()
-                li.video__comment(data-id=comment.id)
+            each comment in video.comment.reverse()
+                li.video__comment(data-id=comment._id)
                     i.fas.fa-comment
                     span  #{comment.text}
-                    button#delete__button ❌
+                    if loggedIn && (loggedInUser._id === String(comment.owner)) 
+                        span.deleteBtn ❌
 block scripts
     script(src="/static/js/videoPlayer.js")
     if loggedIn
