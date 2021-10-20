@@ -14,10 +14,9 @@ const videoContainer = document.getElementById("videoContainer");
 const videoContainer2 = document.querySelector(
   "#videoContainer > :not(#videoControls)"
 );
-
-const videoControls = document.getElementById("videoControls");
-
 const body = document.querySelector("body");
+const comment = document.querySelector(".video__comment-form");
+const videoControls = document.getElementById("videoControls");
 let controlsTimeout = null;
 let controlsMovementTimeout = null;
 let volumeValue = 0.5;
@@ -125,10 +124,7 @@ const handleShortcut = (event) => {
       video.pause();
     }
   }
-  if (event.keyCode === 70) {
-    event.preventDefault();
-    handleFullscreen();
-  }
+
   playBtnIcon.classList = video.paused ? "fas fa-play" : "fas fa-pause";
 };
 
@@ -151,3 +147,4 @@ video.addEventListener("ended", handleEnded);
 videoContainer.addEventListener("mousemove", handleMouseMove);
 videoContainer.addEventListener("mouseleave", handleMouseLeave);
 body.addEventListener("keydown", handleShortcut);
+comment.addEventListener("keydown", handleignore);

@@ -109,7 +109,7 @@ export const finishGithubLogin = async (req, res) => {
         },
       })
     ).json();
-    console.log(emailData);
+
     const emailObj = emailData.find(
       (email) => email.primary === true && email.verified === true
     );
@@ -139,36 +139,51 @@ export const finishGithubLogin = async (req, res) => {
 
 export const logout = (req, res) => {
   req.session.destroy();
-  req.flash("info", "Bye Bye");
+  // req.flash("successMessage", "Bye Bye");
   return res.redirect("/");
 };
 export const getEdit = (req, res) => {
   return res.render("edit-profile", { pageTitle: "Edit Profile " });
 };
 export const postEdit = async (req, res) => {
-  const {
-    session: {
-      user: { _id },
-    },
-    body: { name, email, username, location },
-    file,
+  const pageTitle = "Edit Profile";
+  const { 
+      session: {
+          user: { _id, avatarUrl, email: sessionEmail, username: sessionUsername },
+      },
+      body: { name, email, username, location },
+      file
   } = req;
-  console.log(file);
 
-  const updatedUser = await User.findByIdAndUpdate(
-    _id,
-    {
+  let searchParam = [];
+  if (sessionEmail !== email) {
+      searchParam.push({ email });
+  }
+  if (sessionUsername !== username) {
+      searchParam.push({ username });
+  }
+  if (searchParam.length > 0) {
+      const foundUser = await User.findOne({ $or: searchParam});
+      if (foundUser && foundUser._id.toString() !== _id) {
+          // id 비교 : email과 username이 내 것인지 타인의 것인지 확인
+          return res.status(400).render("edit-profile", {
+              pageTitle,
+              errorMessage: "This username/email is already taken"
+          });
+      }
+  }
+  const updatedUser = await User.findByIdAndUpdate(_id, {
       avatarUrl: file ? file.path : avatarUrl,
       name,
-      email,
+      email, 
       username,
-      location,
-    },
-    { new: true }
-  );
+      location
+  }, {
+      new: true
+  });
   req.session.user = updatedUser;
-  return res.redirect("/users/edit");
-};
+  return res.redirect(`/users/${_id}`);
+}
 
 export const getChangePassword = (req, res) => {
   if (req.session.user.socialOnly === true) {

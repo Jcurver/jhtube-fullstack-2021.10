@@ -51,9 +51,7 @@ const deleteComment = (event) => {
   const commentContainer = document.querySelector(".video__comments ul");
   const commentList = event.target.parentNode;
   commentContainer.removeChild(commentList);
-};
-
-
+}; 
 const handleDelete = async (event) => {
   const commentList = event.target.parentNode;
   const commentId = commentList.dataset.id;

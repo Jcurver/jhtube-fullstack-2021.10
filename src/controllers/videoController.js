@@ -12,7 +12,7 @@ export const home = async (req, res) => {
 export const watch = async (req, res) => {
   const { id } = req.params;
   const video = await Video.findById(id).populate("owner").populate("comment");
-  console.log(video);
+
   if (!video) {
     return res.render("404", { pageTitle: "Video not found." });
   }
@@ -41,7 +41,7 @@ export const postEdit = async (req, res) => {
   } = req.session;
   const { id } = req.params;
   const { title, description, hashtags } = req.body;
-  const video = await Video.exists({ _id: id });
+  const video = await Video.findById(id);
   if (!video) {
     return res.status(404).render("404", { pageTitle: "Video not found." });
   }
@@ -63,26 +63,23 @@ export const getUpload = (req, res) => {
 };
 
 export const postUpload = async (req, res) => {
-  const {
-    user: { _id },
-  } = req.session;
-  const { video, thumb } = req.files;
-  const { title, description, hashtags } = req.body;
-  try {
+  const { session: { user: { _id }},
+  file: { path: fileUrl },
+  body: { title, description, hashtags }} = req;
+  try{
     const newVideo = await Video.create({
-      title,
-      description,
-      fileUrl: video[0].path,
-      thumbUrl: thumb[0].path,
-      owner: _id,
-      hashtags: Video.formatHashtags(hashtags),
+        title, 
+        fileUrl,
+        description,
+        owner: _id,
+        hashtags: Video.formatHashtags(hashtags)
     });
     const user = await User.findById(_id);
     user.videos.push(newVideo._id);
     user.save();
     return res.redirect("/");
   } catch (error) {
-    console.log(error);
+
     return res.status(400).render("upload", {
       pageTitle: "Upload Video",
       errorMessage: error._message,
@@ -144,6 +141,8 @@ export const createComment = async (req, res) => {
     video: id,
   });
   video.comment.push(comment._id);
+  commentUser.comments.push(comment._id);
+  commentUser.save();
   video.save();
   req.session.user = commentUser;
   return res.status(201).json({ newCommentId: comment._id });
@@ -158,12 +157,13 @@ export const deleteComment = async (req, res) => {
   const video = await Video.findById(videoId);
   const commentUser = await User.findById(user._id);
 
-  console.log(commentUser);
-  if (user.comment.indexOf(id) < 0) {
+
+  if (commentUser.comments.indexOf(id) < 0) {
     req.flash("info", "Not authorized");
     return res.sendStatus(403);
   }
-  commentUser.comment.splice(commentUser.comment.indexOf(id), 1);
+
+  commentUser.comments.splice(commentUser.comments.indexOf(id), 1);
   video.comment.splice(video.comment.indexOf(id), 1);
 
   await video.save();

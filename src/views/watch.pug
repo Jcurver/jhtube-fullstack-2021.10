@@ -39,7 +39,7 @@ block content
             each comment in video.comment.reverse()
                 li.video__comment(data-id=comment._id)
                     i.fas.fa-comment
-                    span  #{comment.text}
+                    span.comment__text  #{comment.text}
                     if loggedIn && (loggedInUser._id === String(comment.owner)) 
                         span.deleteBtn ❌
 block scripts
