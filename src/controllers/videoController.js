@@ -17,7 +17,7 @@ export const watch = async (req, res) => {
     return res.render("404", { pageTitle: "Video not found." });
   }
   return res.render("watch", { pageTitle: video.title, video });
-}; 
+};
 export const getEdit = async (req, res) => {
   const { id } = req.params;
   const {
@@ -62,23 +62,26 @@ export const getUpload = (req, res) => {
 };
 
 export const postUpload = async (req, res) => {
-  const { session: { user: { _id }},
-  file: { path: fileUrl },
-  body: { title, description, hashtags }} = req;
-  try{
+  const {
+    session: {
+      user: { _id },
+    },
+    file: { location: video },
+    body: { title, description, hashtags },
+  } = req;
+  try {
     const newVideo = await Video.create({
-        title, 
-        fileUrl,
-        description,
-        owner: _id,
-        hashtags: Video.formatHashtags(hashtags)
+      title,
+      fileUrl: video[0],
+      description,
+      owner: _id,
+      hashtags: Video.formatHashtags(hashtags),
     });
     const user = await User.findById(_id);
     user.videos.push(newVideo._id);
     user.save();
     return res.redirect("/");
   } catch (error) {
-
     return res.status(400).render("upload", {
       pageTitle: "Upload Video",
       errorMessage: error._message,
@@ -155,7 +158,6 @@ export const deleteComment = async (req, res) => {
 
   const video = await Video.findById(videoId);
   const commentUser = await User.findById(user._id);
-
 
   if (commentUser.comments.indexOf(id) < 0) {
     req.flash("info", "Not authorized");
