@@ -10,3 +10,8 @@ const handleOpen = () => console.log("😎Conneceted to DB 🔌");
 
 db.on("error", (error) => console.log("❌ DB Error ❌", error));
 db.once("open", handleOpen);
+
+
+
+
+
