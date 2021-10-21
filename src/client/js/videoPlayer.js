@@ -15,7 +15,6 @@ const videoContainer2 = document.querySelector(
   "#videoContainer > :not(#videoControls)"
 );
 const body = document.querySelector("body");
-const comment = document.querySelector(".video__comment-form");
 const videoControls = document.getElementById("videoControls");
 let controlsTimeout = null;
 let controlsMovementTimeout = null;
@@ -147,4 +146,3 @@ video.addEventListener("ended", handleEnded);
 videoContainer.addEventListener("mousemove", handleMouseMove);
 videoContainer.addEventListener("mouseleave", handleMouseLeave);
 body.addEventListener("keydown", handleShortcut);
-comment.addEventListener("keydown", handleignore);

@@ -6,6 +6,7 @@ export const home = async (req, res) => {
   const videos = await Video.find({})
     .sort({ createdAt: "desc" })
     .populate("owner");
+
   return res.render("home", { pageTitle: "Home", videos });
 };
 
@@ -68,14 +69,15 @@ export const postUpload = async (req, res) => {
     },
     body: { title, description, hashtags },
   } = req;
-  const { location: video } = req.file;
+  const { video, thumb } = req.files;
 
   // const isHeroku = process.env.NODE_ENV === "production";
 
   try {
     const newVideo = await Video.create({
       title,
-      fileUrl: video[0],
+      fileUrl: video[0].location,
+      thumbUrl: thumb[0].location,
       description,
       owner: _id,
       hashtags: Video.formatHashtags(hashtags),
