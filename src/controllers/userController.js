@@ -170,6 +170,7 @@ export const postEdit = async (req, res) => {
               pageTitle,
               errorMessage: "This username/email is already taken"
           });
+          
       }
   }
   const updatedUser = await User.findByIdAndUpdate(_id, {
