@@ -68,7 +68,7 @@ export const postUpload = async (req, res) => {
     },
     body: { title, description, hashtags },
   } = req;
-  const { path:video } = req.file;
+  const { location: video } = req.file;
 
   // const isHeroku = process.env.NODE_ENV === "production";
 
@@ -79,7 +79,6 @@ export const postUpload = async (req, res) => {
       description,
       owner: _id,
       hashtags: Video.formatHashtags(hashtags),
-      
     });
     const user = await User.findById(_id);
     user.videos.push(newVideo._id);
