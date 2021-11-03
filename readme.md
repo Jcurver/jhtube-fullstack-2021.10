@@ -1,7 +1,6 @@
 It was created to mimic YouTube.
 
-
-# JHtube router
+JHtube router
 
 / -> Home
 
